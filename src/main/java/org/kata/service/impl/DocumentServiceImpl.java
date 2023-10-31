@@ -60,6 +60,7 @@ public class DocumentServiceImpl implements DocumentService {
         List<String> itemsSerialNums;
         List<String> itemsIssueData = new ArrayList<>();
         Tesseract tesseract = new Tesseract();
+        tesseract.setDatapath("C:\\Users\\д\\Tess4J-3.4.8-src\\Tess4J\\tessdata"); // Укажите путь к tessdata
         tesseract.setDatapath(tess4JConfig.getTessdataSrc());
         tesseract.setLanguage(tess4JConfig.getTrainedData());
         tesseract.setPageSegMode(ITessAPI.TessPageSegMode.PSM_AUTO_ONLY);
