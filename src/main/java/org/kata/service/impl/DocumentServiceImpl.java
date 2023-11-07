@@ -33,6 +33,19 @@ public class DocumentServiceImpl implements DocumentService {
     private final WebClient updateWebClient;
     private final Tess4JConfig tess4JConfig;
     private final RecognizeTextFile recognizeTextFile;
+    private static final String TESSDATA_SRC = "src/main/resources/tessdata";
+    private static final String TRAINED_DATA = "rus-best";
+    private static final int PASSPORT_WIDTH = 900;
+    private static final int PASSPORT_HEIGHT = 1200;
+    private static final Rectangle PASSPORT_FULL_NAME_BOX = new Rectangle(370, 630, 405, 225);
+    private static final Rectangle PASSPORT_SERIAL_NUMS_BOX = new Rectangle(775, 125, 127, 451);
+    private static final Rectangle PASSPORT_ISSUE_DATA_BOX = new Rectangle(71, 236, 300, 60);
+    private static final int DRIVING_LICENSE_WIDTH = 1200;
+    private static final int DRIVING_LICENSE_HEIGHT = 800;
+    private static final Rectangle DRIVING_LICENSE_FULL_NAME_BOX = new Rectangle(480, 120, 680, 175);
+    private static final Rectangle DRIVING_LICENSE_SERIAL_NUMS_BOX = new Rectangle(480, 500, 250, 90);
+    private static final Rectangle DRIVING_LICENSE_ISSUE_DATA_BOX = new Rectangle(480, 410, 586, 60);
+
 
     public DocumentServiceImpl(UrlProperties urlProperties, RecognizeTextFile recognizeTextFile, Tess4JConfig tess4JConfig) {
         this.urlProperties = urlProperties;
