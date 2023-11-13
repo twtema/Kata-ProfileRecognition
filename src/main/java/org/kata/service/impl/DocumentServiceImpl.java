@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.ITessAPI;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
+import org.kata.config.Tess4JConfig;
 import org.kata.config.UrlProperties;
 import org.kata.dto.RecognizeDocumentDto;
 import org.kata.dto.enums.DocumentType;
@@ -30,6 +31,7 @@ import java.util.regex.Pattern;
 public class DocumentServiceImpl implements DocumentService {
     private final UrlProperties urlProperties;
     private final WebClient updateWebClient;
+    private final Tess4JConfig tess4JConfig;
     private final RecognizeTextFile recognizeTextFile;
     private static final String TESSDATA_SRC = "src/main/resources/tessdata";
     private static final String TRAINED_DATA = "rus-best";
@@ -45,10 +47,11 @@ public class DocumentServiceImpl implements DocumentService {
     private static final Rectangle DRIVING_LICENSE_ISSUE_DATA_BOX = new Rectangle(480, 410, 586, 60);
 
 
-    public DocumentServiceImpl(UrlProperties urlProperties, RecognizeTextFile recognizeTextFile) {
+    public DocumentServiceImpl(UrlProperties urlProperties, RecognizeTextFile recognizeTextFile, Tess4JConfig tess4JConfig) {
         this.urlProperties = urlProperties;
         this.updateWebClient = WebClient.create(urlProperties.getProfileUpdateBaseUrl());
         this.recognizeTextFile = recognizeTextFile;
+        this.tess4JConfig = tess4JConfig;
     }
 
     public RecognizeDocumentDto recognizeDocument(String icp, DocumentType type, MultipartFile file) {
@@ -57,14 +60,14 @@ public class DocumentServiceImpl implements DocumentService {
         List<String> itemsSerialNums;
         List<String> itemsIssueData = new ArrayList<>();
         Tesseract tesseract = new Tesseract();
-        tesseract.setDatapath(TESSDATA_SRC);
-        tesseract.setLanguage(TRAINED_DATA);
+        tesseract.setDatapath(tess4JConfig.getTessdataSrc());
+        tesseract.setLanguage(tess4JConfig.getTrainedData());
         tesseract.setPageSegMode(ITessAPI.TessPageSegMode.PSM_AUTO_ONLY);
 
         switch (type) {
             case RF_PASSPORT -> {
-                documentInfo = getDocumentText(tesseract, file, PASSPORT_WIDTH, PASSPORT_HEIGHT,
-                        PASSPORT_FULL_NAME_BOX, PASSPORT_SERIAL_NUMS_BOX, PASSPORT_ISSUE_DATA_BOX);
+                documentInfo = getDocumentText(tesseract, file, tess4JConfig.getPassportWidth(), tess4JConfig.getPassportHeight(),
+                        tess4JConfig.getPassportFullNameBox(), tess4JConfig.getPassportSerialNumsBox(), tess4JConfig.getPassportIssueDataBox());
                 itemsFullName = new ArrayList<>(List.of(documentInfo.get(0).replaceAll("\\n", " ")
                         .replaceAll("\\s+", " ")
                         .split("\\s")));
@@ -79,8 +82,8 @@ public class DocumentServiceImpl implements DocumentService {
                 }
             }
             case RF_DRIVING_LICENSE -> {
-                documentInfo = getDocumentText(tesseract, file, DRIVING_LICENSE_WIDTH, DRIVING_LICENSE_HEIGHT,
-                        DRIVING_LICENSE_FULL_NAME_BOX, DRIVING_LICENSE_SERIAL_NUMS_BOX, DRIVING_LICENSE_ISSUE_DATA_BOX);
+                documentInfo = getDocumentText(tesseract, file, tess4JConfig.getDrivingLicenseWidth(), tess4JConfig.getDrivingLicenseHeight(),
+                        tess4JConfig.getDrivingLicenseNameBox(), tess4JConfig.getDrivingLicenseSerialNumsBox(), tess4JConfig.getDrivingLicenseIssueDataBoxX());
                 itemsFullName = new ArrayList<>(List.of(documentInfo.get(0).replaceAll("\\n", " ")
                         .replaceAll("\\s\\s", " ")
                         .split("\\s")));
