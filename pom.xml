@@ -20,6 +20,7 @@
         <tess4j.version>5.7.0</tess4j.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <prometheus.version>1.12.0</prometheus.version>
     </properties>
 
     <dependencies>
@@ -70,6 +71,17 @@
             <groupId>net.sourceforge.tess4j</groupId>
             <artifactId>tess4j</artifactId>
             <version>${tess4j.version}</version>
+        </dependency>
+        <!--        Зависимости для Prometheus -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+            <version>${spring-boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <version>${prometheus.version}</version>
         </dependency>
     </dependencies>
     <build>
