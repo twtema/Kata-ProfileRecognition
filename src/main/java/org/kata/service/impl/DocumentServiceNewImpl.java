@@ -5,10 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.kata.config.UrlProperties;
-import org.kata.dto.RecognizeDocumentDto;
+import org.kata.dto.RecognizeDocumentNewDto;
 import org.kata.dto.enums.DocumentType;
 import org.kata.exception.DocumentsRecognitionException;
-import org.kata.service.DocumentService;
+import org.kata.service.DocumentServiceNew;
 import org.kata.service.RecognizeTextFile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,21 +20,24 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
+import java.util.Date;
 
 @Service
 @Slf4j
-public class DocumentServiceImpl implements DocumentService {
+public class DocumentServiceNewImpl implements DocumentServiceNew {
     private final UrlProperties urlProperties;
     private final WebClient updateWebClient;
     private final RecognizeTextFile recognizeTextFile;
 
-    public DocumentServiceImpl(UrlProperties urlProperties, RecognizeTextFile recognizeTextFile) {
+
+    public DocumentServiceNewImpl(UrlProperties urlProperties, RecognizeTextFile recognizeTextFile) {
         this.urlProperties = urlProperties;
         this.updateWebClient = WebClient.create(urlProperties.getProfileUpdateBaseUrl());
         this.recognizeTextFile = recognizeTextFile;
     }
 
-    public RecognizeDocumentDto recognizeDocument(String icp, DocumentType type, MultipartFile file) {
+    public RecognizeDocumentNewDto recognizeDocumentNew(String icp, DocumentType type, MultipartFile file) {
         Tesseract tesseract = new Tesseract();
         //tesseract.setDatapath("/path_to_tessdata"); // Укажите путь к tessdata
 
@@ -43,7 +46,7 @@ public class DocumentServiceImpl implements DocumentService {
             BufferedImage image = null;
 
             InputStream in = new ByteArrayInputStream(file.getBytes());
-//            OutputStream out = new ByteArrayOutputStream(2000000);
+
             image = ImageIO.read(in);
 
             recognizedText = tesseract.doOCR(image);
@@ -55,7 +58,7 @@ public class DocumentServiceImpl implements DocumentService {
         if (StringUtil.isNullOrEmpty(recognizedText)) {
             throw new DocumentsRecognitionException("Не удалось распознать документ");
         }
-        RecognizeDocumentDto recognizeDocumentDto = RecognizeDocumentDto.builder()
+        RecognizeDocumentNewDto recognizeDocumentNewDto = RecognizeDocumentNewDto.builder()
                 .icp(icp)
                 .name(recognizeTextFile.recognizeName(recognizedText))
                 .surname(recognizeTextFile.recognizeSurname(recognizedText))
@@ -65,20 +68,24 @@ public class DocumentServiceImpl implements DocumentService {
                 .documentSerial(recognizeTextFile.recognizeSerial(recognizedText))
                 .expirationDate(recognizeTextFile.recognizeExpirationDate(recognizedText))
                 .issueDate(recognizeTextFile.recognizeIssueDate(recognizedText))
+
+                .externalDate(Date.from(Instant.now()))
+
                 .build();
 
-        postDocument(recognizeDocumentDto);
+        postDocumentNew(recognizeDocumentNewDto);
 
-        return recognizeDocumentDto;
+        return recognizeDocumentNewDto;
     }
 
-    private void postDocument(RecognizeDocumentDto dto) {
+    private void postDocumentNew(RecognizeDocumentNewDto dto) {
+
         updateWebClient.post()
                 .uri(uriBuilder -> uriBuilder
                         .path(urlProperties.getProfileUpdatePostDocuments())
                         .queryParam("icp", dto.getIcp())
                         .build())
-                .body(Mono.just(dto), RecognizeDocumentDto.class)
+                .body(Mono.just(dto), RecognizeDocumentNewDto.class)
                 .retrieve()
                 .bodyToMono(Void.class)
                 .block();

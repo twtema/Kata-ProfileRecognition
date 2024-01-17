@@ -1,5 +1,6 @@
 package org.kata.service;
 
+
 import org.kata.dto.RecognizeDocumentDto;
 import org.kata.dto.enums.DocumentType;
 import org.springframework.web.multipart.MultipartFile;
