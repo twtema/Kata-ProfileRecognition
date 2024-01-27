@@ -20,6 +20,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
+import java.util.Date;
 
 @Service
 @Slf4j
@@ -36,14 +38,13 @@ public class DocumentServiceImpl implements DocumentService {
 
     public RecognizeDocumentDto recognizeDocument(String icp, DocumentType type, MultipartFile file) {
         Tesseract tesseract = new Tesseract();
-        //tesseract.setDatapath("/path_to_tessdata"); // Укажите путь к tessdata
 
         String recognizedText;
         try {
             BufferedImage image = null;
 
             InputStream in = new ByteArrayInputStream(file.getBytes());
-//            OutputStream out = new ByteArrayOutputStream(2000000);
+
             image = ImageIO.read(in);
 
             recognizedText = tesseract.doOCR(image);
@@ -65,6 +66,9 @@ public class DocumentServiceImpl implements DocumentService {
                 .documentSerial(recognizeTextFile.recognizeSerial(recognizedText))
                 .expirationDate(recognizeTextFile.recognizeExpirationDate(recognizedText))
                 .issueDate(recognizeTextFile.recognizeIssueDate(recognizedText))
+
+                .externalDate(Date.from(Instant.now()))
+
                 .build();
 
         postDocument(recognizeDocumentDto);

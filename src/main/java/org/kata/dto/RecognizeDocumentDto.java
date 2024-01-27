@@ -31,4 +31,6 @@ public class RecognizeDocumentDto {
     private Date issueDate;
 
     private Date expirationDate;
+
+    private Date externalDate;
 }
