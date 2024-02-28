@@ -15,7 +15,10 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
 
 @Service
 @Slf4j
@@ -32,14 +35,16 @@ public class DocumentServiceImpl implements DocumentService {
 
     public RecognizeDocumentDto recognizeDocument(String icp, DocumentType type, MultipartFile file) {
         Tesseract tesseract = new Tesseract();
-        //tesseract.setDatapath("/path_to_tessdata"); // Укажите путь к tessdata
+        tesseract.setDatapath("src\\main\\resources\\tessdata"); // Укажите путь к tessdata
 
         String recognizedText;
         try {
-            recognizedText = tesseract.doOCR((BufferedImage) file);
+            BufferedImage image = convertMultipartFileToBufferedImage(file);
+            recognizedText = tesseract.doOCR(image);
         } catch (TesseractException e) {
             throw new DocumentsRecognitionException("Ошибка при распознавании документа");
         }
+
         if (StringUtil.isNullOrEmpty(recognizedText)) {
             throw new DocumentsRecognitionException("Не удалось распознать документ");
         }
@@ -58,6 +63,15 @@ public class DocumentServiceImpl implements DocumentService {
         postDocument(recognizeDocumentDto);
 
         return recognizeDocumentDto;
+    }
+
+    private BufferedImage convertMultipartFileToBufferedImage(MultipartFile file) {
+        try {
+            InputStream inputStream = file.getInputStream();
+            return ImageIO.read(inputStream);
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка при преобразовании MultipartFile в BufferedImage", e);
+        }
     }
 
     private void postDocument(RecognizeDocumentDto dto) {

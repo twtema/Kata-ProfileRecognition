@@ -18,7 +18,7 @@ public class DocumentController {
 
     private final DocumentService documentService;
 
-    @GetMapping()
+    @PostMapping()
     public ResponseEntity<RecognizeDocumentDto> getContactMedium(
             @RequestParam("icp") String icp,
             @RequestParam("type") DocumentType type,
